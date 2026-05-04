@@ -3,18 +3,486 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FSA Brand Pulse — Initializing</title>
+  <title>FSA Brand Pulse — 2026-05-04</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; background: #0D1B2A; color: #E8F4F8; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
-    h1 { font-size: 2rem; font-weight: 700; }
-    p { opacity: 0.6; margin-top: 8px; }
+    :root {
+      --header-bg: #0D1B2A;
+      --header-text: #E8F4F8;
+      --tab-hover: rgba(255,255,255,0.15);
+      --card-radius: 12px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.10);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F4F6F8; color: #1A1A2E; }
+
+    /* Header */
+    .site-header { background: var(--header-bg); color: var(--header-text); padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+    .site-header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+    .site-header h1 span { font-weight: 300; opacity: 0.7; }
+    .last-updated { font-size: 0.8rem; opacity: 0.6; }
+
+    /* Tab Navigation */
+    .tab-nav { background: #1E2D3D; display: flex; overflow-x: auto; scrollbar-width: none; padding: 0 16px; }
+    .tab-nav::-webkit-scrollbar { display: none; }
+    .tab-btn { background: none; border: none; color: rgba(255,255,255,0.55); padding: 14px 20px; cursor: pointer; font-size: 0.88rem; font-weight: 500; white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 7px; }
+    .tab-btn:hover { color: rgba(255,255,255,0.85); background: var(--tab-hover); }
+    .tab-btn.active { color: #fff; border-bottom-color: var(--brand-color, #60A5FA); }
+    .tab-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--brand-color, #60A5FA); }
+
+    /* Tab Panels */
+    .tab-panel { display: none; padding: 28px 32px; }
+    .tab-panel.active { display: block; }
+
+    /* Brand Banner */
+    .brand-banner { background: var(--brand-primary); color: #fff; border-radius: var(--card-radius); padding: 24px 28px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .brand-banner h2 { font-size: 1.4rem; font-weight: 700; }
+    .brand-banner .domain { opacity: 0.75; font-size: 0.85rem; margin-top: 3px; }
+    .pulse-score-ring { text-align: center; }
+    .pulse-score-ring .score { font-size: 2.4rem; font-weight: 800; line-height: 1; }
+    .pulse-score-ring .label { font-size: 0.72rem; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; }
+
+    /* Grid */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    /* Cards */
+    .card { background: #fff; border-radius: var(--card-radius); padding: 20px 22px; box-shadow: var(--shadow); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .card-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #6B7280; }
+    .card-badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+    .badge-green { background: #D1FAE5; color: #065F46; }
+    .badge-yellow { background: #FEF3C7; color: #92400E; }
+    .badge-red { background: #FEE2E2; color: #991B1B; }
+    .badge-blue { background: #DBEAFE; color: #1E40AF; }
+
+    /* Stars */
+    .star-display { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+    .star-display .rating-num { font-size: 2rem; font-weight: 800; color: var(--brand-primary, #1B6B3A); }
+    .stars { color: #F59E0B; font-size: 1.1rem; letter-spacing: 2px; }
+    .review-sub { font-size: 0.8rem; color: #6B7280; }
+
+    /* News list */
+    .news-item { padding: 10px 0; border-bottom: 1px solid #F3F4F6; }
+    .news-item:last-child { border-bottom: none; }
+    .news-title a { font-size: 0.88rem; font-weight: 500; color: #1A1A2E; text-decoration: none; }
+    .news-title a:hover { color: var(--brand-primary, #1B6B3A); text-decoration: underline; }
+    .news-meta { font-size: 0.75rem; color: #9CA3AF; margin-top: 2px; }
+    .no-news { color: #9CA3AF; font-size: 0.85rem; font-style: italic; }
+
+    /* Keyword table */
+    .kw-table { width: 100%; border-collapse: collapse; }
+    .kw-table th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: #9CA3AF; text-align: left; padding: 6px 8px; border-bottom: 2px solid #F3F4F6; }
+    .kw-table td { padding: 7px 8px; font-size: 0.83rem; border-bottom: 1px solid #F9FAFB; }
+    .pos-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .pos-1-3 { background: #D1FAE5; color: #065F46; }
+    .pos-4-10 { background: #DBEAFE; color: #1E40AF; }
+    .pos-11-20 { background: #FEF3C7; color: #92400E; }
+    .pos-nf { background: #F3F4F6; color: #6B7280; }
+
+    /* Social pills */
+    .social-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .social-pill { padding: 6px 14px; border-radius: 20px; font-size: 0.82rem; font-weight: 500; }
+    .pill-ig { background: #FDF2F8; color: #9D174D; }
+    .pill-fb { background: #EFF6FF; color: #1D4ED8; }
+    .pill-reddit { background: #FFF7ED; color: #C2410C; }
+    .pill-x { background: #F9FAFB; color: #111827; }
+
+    /* AI presence */
+    .ai-status { display: flex; align-items: center; gap: 10px; padding: 12px; background: #F9FAFB; border-radius: 8px; margin-top: 8px; }
+    .ai-icon { font-size: 1.3rem; }
+    .ai-text { font-size: 0.85rem; }
+    .ai-yes { border-left: 3px solid #10B981; }
+    .ai-partial { border-left: 3px solid #F59E0B; }
+    .ai-no { border-left: 3px solid #EF4444; }
+
+    /* Footer */
+    .site-footer { background: var(--header-bg); color: rgba(255,255,255,0.4); text-align: center; padding: 16px; font-size: 0.75rem; margin-top: 40px; }
   </style>
 </head>
 <body>
+
+<header class="site-header">
   <div>
-    <h1>FSA Brand Pulse</h1>
-    <p>Dashboard initializing — runs daily at 5am Mountain Time.</p>
-    <p style="margin-top:20px;font-size:0.85rem;">FullSpeed Automotive · 8 Brands · 50 DMAs</p>
+    <h1>FSA Brand Pulse <span>/ Live Dashboard</span></h1>
+    <p>FullSpeed Automotive &middot; 8 Brands &middot; 50 DMAs</p>
   </div>
+  <div class="last-updated">Last updated: 2026-05-04 05:00 MT</div>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="gm" style="--brand-color:#2A7A3B">
+    <span class="tab-dot" style="background:#2A7A3B"></span>Grease Monkey
+  </button>
+  <button class="tab-btn" data-tab="speedee" style="--brand-color:#C41E3A">
+    <span class="tab-dot" style="background:#C41E3A"></span>SpeeDee
+  </button>
+  <button class="tab-btn" data-tab="uncleds" style="--brand-color:#5C2D91">
+    <span class="tab-dot" style="background:#5C2D91"></span>Uncle Ed's
+  </button>
+  <button class="tab-btn" data-tab="kwikkar" style="--brand-color:#CC0000">
+    <span class="tab-dot" style="background:#CC0000"></span>Kwik Kar
+  </button>
+  <button class="tab-btn" data-tab="alf" style="--brand-color:#003082">
+    <span class="tab-dot" style="background:#003082"></span>Am. Lube Fast
+  </button>
+  <button class="tab-btn" data-tab="econ" style="--brand-color:#2E7D32">
+    <span class="tab-dot" style="background:#2E7D32"></span>Economy Lube
+  </button>
+  <button class="tab-btn" data-tab="herb" style="--brand-color:#1E3A5F">
+    <span class="tab-dot" style="background:#1E3A5F"></span>Herbert Auto
+  </button>
+  <button class="tab-btn" data-tab="fsa" style="--brand-color:#B8860B">
+    <span class="tab-dot" style="background:#B8860B"></span>FSA Corporate
+  </button>
+</nav>
+
+<main>
+
+<!-- ===== GREASE MONKEY ===== -->
+<div class="tab-panel active" id="tab-gm" style="--brand-primary:#2A7A3B; --brand-accent:#F7C948;">
+  <div class="brand-banner" style="background: linear-gradient(135deg, #1B6B3A 0%, #2A7A3B 100%);">
+    <div>
+      <h2>Grease Monkey</h2>
+      <div class="domain">greasemonkey.com &middot; ~600 locations</div>
+    </div>
+    <div class="pulse-score-ring">
+      <div class="score">86</div>
+      <div class="label">Pulse Score</div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Reviews</span><span class="card-badge badge-green">Primary</span></div>
+      <div class="star-display">
+        <span class="rating-num">4.7</span>
+        <div>
+          <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <div class="review-sub">~3,000+ Google reviews (portfolio avg)</div>
+        </div>
+      </div>
+      <div style="font-size:0.82rem;color:#6B7280;margin-top:8px;">Vault baseline 4.7 &middot; GBP review growth +8.94% YTD &middot; Yelp individual locations range 3.5&ndash;4.5</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">News (7 days)</span><span class="card-badge badge-green">5 articles</span></div>
+      <div class="news-item"><div class="news-title"><a href="https://oilexgreasemonkey.com/national-car-care-month-oil-change-49-99-deal-april-23/" target="_blank">National Car Care Month: $49.99 Full Synthetic Oil Change Deal</a></div><div class="news-meta">OilexGreaseMonkey.com &middot; Apr 2026</div></div>
+      <div class="news-item"><div class="news-title"><a href="https://oilexgreasemonkey.com/news/" target="_blank">Oilex Operating Expands into Montana &mdash; 5 MasterLube Acquisitions</a></div><div class="news-meta">OilexGreaseMonkey.com &middot; May 2026</div></div>
+      <div class="news-item"><div class="news-title"><a href="https://www.prnewswire.com/news-releases/grease-monkey-accelerates-toward-goal-of-doubling-in-size-within-three-years-302497839.html" target="_blank">Grease Monkey Accelerates Toward Goal of Doubling in Size Within 3 Years</a></div><div class="news-meta">PR Newswire &middot; Jul 2025 (active)</div></div>
+      <div class="news-item"><div class="news-title"><a href="https://community.triblive.com/west-mifflin-pa/grease-monkey-west-mifflin-412-655-0666/2026-03-26-12980051-west-mifflin-grease-monkey-oil-change-and-more-did-you-know-regular-oil-changes-dot-dot-dot-1-prevent-engine-damage-regular-oil-changes-keep-your-engine-lubricated-reducing-wear-and-tear-2-improve-fuel-efficiency-clean-oil-helps-your-en" target="_blank">Grease Monkey West Mifflin PA &mdash; Oil Change Awareness Campaign</a></div><div class="news-meta">Tribune-Review &middot; Mar 2026</div></div>
+      <div class="news-item"><div class="news-title"><a href="https://www.noln.net/site-placement/latest-news/news/55056201/grease-monkey-outlines-three-year-plan-to-expand-across-western-us" target="_blank">Grease Monkey Outlines Three-Year Western U.S. Expansion Plan</a></div><div class="news-meta">National Oil &amp; Lube News &middot; 2026</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">AI / GEO Presence</span></div>
+      <div class="ai-status ai-partial">
+        <span class="ai-icon">&#9889;</span>
+        <div class="ai-text">Partial &mdash; cited in AI-generated oil change guides (oreateai.com, cruiseship.cloud) and price comparison pages. Not confirmed in Google AI Overview for &ldquo;oil change near me&rdquo; nationally.</div>
+      </div>
+      <div style="font-size:0.8rem;color:#6B7280;margin-top:10px;">Baseline: 56% Positive AI Sentiment &middot; Target: 65% EoY 2026</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Branded Keywords</span></div>
+      <table class="kw-table">
+        <tr><th>Keyword</th><th>Est. Position</th><th>Notes</th></tr>
+        <tr><td>grease monkey oil change</td><td><span class="pos-badge pos-1-3">1&ndash;3</span></td><td>greasemonkey.com homepage + service page dominant</td></tr>
+        <tr><td>grease monkey near me</td><td><span class="pos-badge pos-1-3">1&ndash;3</span></td><td>Locations finder top-ranked; GBP Knowledge Panel active</td></tr>
+        <tr><td>grease monkey hours</td><td><span class="pos-badge pos-1-3">1&ndash;3</span></td><td>Location pages with hours rank at top nationally</td></tr>
+        <tr><td>grease monkey coupon</td><td><span class="pos-badge pos-1-3">1&ndash;3</span></td><td>greasemonkey.com/coupons ranks well; active Apr 2026 promos</td></tr>
+        <tr><td>grease monkey locations</td><td><span class="pos-badge pos-1-3">1&ndash;3</span></td><td>greasemonkey.com/locations appears pos 1&ndash;2</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Nonbrand Keywords</span></div>
+      <table class="kw-table">
+        <tr><th>Keyword</th><th>Est. Position</th><th>Brand Seen</th></tr>
+        <tr><td>oil change near me</td><td><span class="pos-badge pos-nf">Local Pack</span></td><td>Valvoline, Jiffy Lube dominant nationally; GM in local pack by market</td></tr>
+        <tr><td>quick lube near me</td><td><span class="pos-badge pos-nf">Local Pack</span></td><td>Take 5, Valvoline lead; GM appears in select markets</td></tr>
+        <tr><td>full synthetic oil change</td><td><span class="pos-badge pos-4-10">4&ndash;10</span></td><td>GM pricing page appears; Valvoline/Jiffy Lube rank higher</td></tr>
+        <tr><td>cheap oil change near me</td><td><span class="pos-badge pos-nf">Not Found</span></td><td>Competitor-dominated; no FSA brand in top 10 nationally</td></tr>
+        <tr><td>oil change coupons</td><td><span class="pos-badge pos-4-10">4&ndash;10</span></td><td>greasemonkey.com/coupons ranks mid-page</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header"><span class="card-title">Social Pulse</span></div>
+    <div style="font-size:0.85rem;color:#374151;margin-bottom:6px;">Estimated 7-day mention volume: <strong>Medium</strong></div>
+    <div class="social-grid">
+      <span class="social-pill pill-ig">Instagram: @greasemonkeyintl (1,023 followers) &middot; coupon posts active</span>
+      <span class="social-pill pill-x">X/Twitter: @GreaseMonkeyInt &middot; @grease_co (CO locations active)</span>
+      <span class="social-pill pill-reddit">Reddit: Low &mdash; occasional mentions in r/cars, r/frugal</span>
+      <span class="social-pill pill-fb">Facebook: Regional franchise pages active</span>
+    </div>
+    <div style="font-size:0.8rem;color:#9CA3AF;margin-top:10px;">Social managed by Otey White agency. Coupon and promo posts driving most engagement Apr&ndash;May 2026.</div>
+  </div>
+</div>
+
+<!-- ===== SPEEDEE ===== -->
+<div class="tab-panel" id="tab-speedee" style="--brand-primary:#C41E3A; --brand-accent:#FFFFFF;">
+  <div class="brand-banner" style="background: linear-gradient(135deg, #9B1528 0%, #C41E3A 100%);">
+    <div>
+      <h2>SpeeDee Oil Change &amp; Auto Service</h2>
+      <div class="domain">speedeeoil.com &middot; Southeast/Gulf Coast &middot; 150+ centers</div>
+    </div>
+    <div class="pulse-score-ring">
+      <div class="score">70</div>
+      <div class="label">Pulse Score</div>
+    </div>
+  </div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Reviews</span></div>
+      <div class="star-display"><span class="rating-num">4.8</span><div><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="review-sub">197+ verified CarFax reviews (Charleston, SC)</div></div></div>
+      <div style="font-size:0.82rem;color:#6B7280;margin-top:8px;">Named Readers' Choice 2026 Best Oil Change (Davis Enterprise). Yelp individual locations range 3.5&ndash;4.5 across markets.</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">News (7 days)</span><span class="card-badge badge-yellow">2 articles</span></div>
+      <div class="news-item"><div class="news-title"><a href="https://www.davisenterprise.com/features/readers_choice/readers-choice-2026-speedee-oil-change-midas-best-oil-change/article_15a17712-c9c4-4f67-b864-9ac8091c8b92.html" target="_blank">Readers' Choice 2026: SpeeDee Oil Change/Midas &mdash; Best Oil Change</a></div><div class="news-meta">Davis Enterprise &middot; 2026</div></div>
+      <div class="news-item"><div class="news-title"><a href="https://www.inforum.com/business/speeddee-oil-and-auto-service-opens-in-south-moorhead" target="_blank">SpeeDee Oil &amp; Auto Service Opens in South Moorhead, MN</a></div><div class="news-meta">InForum &middot; Jan 2026</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">AI / GEO Presence</span></div>
+      <div class="ai-status ai-partial"><span class="ai-icon">&#9889;</span><div class="ai-text">Partial &mdash; cited on AI content blogs (oreateai.com) and CoPilot car buying guides. Limited Google AI Overview presence nationally. Midas co-brand may fragment AI attribution.</div></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Branded Keywords</span></div>
+      <table class="kw-table"><tr><th>Keyword</th><th>Est. Position</th><th>Notes</th></tr>
+        <tr><td>speedee oil change</td><td><span class="pos-badge pos-1-3">1&ndash;3</span></td><td>speedeeoil.com homepage ranks top; strong GBP presence in SE markets</td></tr>
+        <tr><td>speedee oil change near me</td><td><span class="pos-badge pos-1-3">1&ndash;3</span></td><td>Location pages rank well in SE/Gulf Coast; Midas pages compete</td></tr>
+        <tr><td>speedee auto service</td><td><span class="pos-badge pos-4-10">4&ndash;10</span></td><td>Services page ranks mid-page; Midas co-brand creates dilution</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Social Pulse</span></div>
+      <div style="font-size:0.85rem;color:#374151;margin-bottom:6px;">Estimated volume: <strong>Low</strong></div>
+      <div class="social-grid">
+        <span class="social-pill pill-ig">Instagram: Minimal branded presence</span>
+        <span class="social-pill pill-fb">Facebook: Franchise location pages active in SE markets</span>
+        <span class="social-pill pill-reddit">Reddit: Very low mention volume</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== UNCLE ED'S ===== -->
+<div class="tab-panel" id="tab-uncleds" style="--brand-primary:#5C2D91; --brand-accent:#FFC107;">
+  <div class="brand-banner" style="background: linear-gradient(135deg, #3D1A6E 0%, #5C2D91 100%);">
+    <div>
+      <h2>Uncle Ed's Oil Shoppe</h2>
+      <div class="domain">unclededs.com &middot; Regional Midwest (Michigan)</div>
+    </div>
+    <div class="pulse-score-ring">
+      <div class="score">44</div>
+      <div class="label">Pulse Score</div>
+    </div>
+  </div>
+  <div class="grid-3">
+    <div class="card"><div class="card-header"><span class="card-title">Reviews</span></div><div class="star-display"><span class="rating-num">4.3</span><div><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</div><div class="review-sub">96+ Yelp reviews (Ann Arbor) &middot; multiple MI locations</div></div></div><div style="font-size:0.82rem;color:#6B7280;margin-top:8px;">Praised for fast service, honest staff, no pushy upselling. Military-background techs noted as trust differentiator across locations.</div></div>
+    <div class="card"><div class="card-header"><span class="card-title">News (7 days)</span><span class="card-badge badge-red">0 articles</span></div><div class="no-news">No news articles found in the past 7 days.</div></div>
+    <div class="card"><div class="card-header"><span class="card-title">AI / GEO Presence</span></div><div class="ai-status ai-no"><span class="ai-icon">&#10060;</span><div class="ai-text">No detectable AI Overview or GEO presence. Brand not surfaced in AI-generated oil change recommendations nationally or regionally.</div></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-header"><span class="card-title">Branded Keywords</span></div><table class="kw-table"><tr><th>Keyword</th><th>Est. Position</th><th>Notes</th></tr>
+      <tr><td>uncle eds oil shoppe</td><td><span class="pos-badge pos-4-10">4&ndash;10</span></td><td>unclededs.com appears but Yelp/Google Maps compete for top slots</td></tr>
+      <tr><td>uncle ed's near me</td><td><span class="pos-badge pos-4-10">4&ndash;10</span></td><td>GBP local pack active in Michigan markets; limited national reach</td></tr>
+      <tr><td>uncle eds oil change</td><td><span class="pos-badge pos-4-10">4&ndash;10</span></td><td>Brand appears in Yelp top results for Michigan-specific searches</td></tr>
+    </table></div>
+    <div class="card"><div class="card-header"><span class="card-title">Social Pulse</span></div><div style="font-size:0.85rem;margin-bottom:6px;">Volume: <strong>Low</strong></div><div class="social-grid">
+      <span class="social-pill pill-fb">Facebook: Limited franchise page presence</span>
+      <span class="social-pill pill-ig">Instagram: No verified brand account found</span>
+      <span class="social-pill pill-reddit">Reddit: No notable mentions found</span>
+    </div></div>
+  </div>
+</div>
+
+<!-- ===== KWIK KAR ===== -->
+<div class="tab-panel" id="tab-kwikkar" style="--brand-primary:#CC0000; --brand-accent:#1A1A1A;">
+  <div class="brand-banner" style="background: linear-gradient(135deg, #990000 0%, #CC0000 100%);">
+    <div>
+      <h2>Kwik Kar</h2>
+      <div class="domain">kwikkar.com &middot; Texas-heavy &middot; 350+ centers in 8 states</div>
+    </div>
+    <div class="pulse-score-ring">
+      <div class="score">65</div>
+      <div class="label">Pulse Score</div>
+    </div>
+  </div>
+  <div class="grid-3">
+    <div class="card"><div class="card-header"><span class="card-title">Reviews</span></div><div class="star-display"><span class="rating-num">4.7</span><div><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="review-sub">468+ CarFax verified reviews (Carrollton Marsh)</div></div></div><div style="font-size:0.82rem;color:#6B7280;margin-top:8px;">CARFAX 4.7&ndash;4.8 at multiple TX locations. PissedConsumer/ComplaintsBoard low-star outliers reflect complaint-skewed platforms common for large franchise networks.</div></div>
+    <div class="card"><div class="card-header"><span class="card-title">News (7 days)</span><span class="card-badge badge-yellow">1 article</span></div>
+      <div class="news-item"><div class="news-title"><a href="https://www.kwikkarspringvalley.com/automotive-insights/2026/02/21/" target="_blank">Kwik Kar Spring Valley &mdash; Automotive Insights: 2026 Car Maintenance Tips</a></div><div class="news-meta">kwikkarspringvalley.com &middot; Feb 2026</div></div>
+    </div>
+    <div class="card"><div class="card-header"><span class="card-title">AI / GEO Presence</span></div><div class="ai-status ai-partial"><span class="ai-icon">&#9889;</span><div class="ai-text">Partial &mdash; Kwik Kar appears in franchise comparison articles and local TX market guides. Multiple domains (kwikkar.com, kwikkaronline.com) may dilute AI citation consolidation.</div></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-header"><span class="card-title">Branded Keywords</span></div><table class="kw-table"><tr><th>Keyword</th><th>Est. Position</th><th>Notes</th></tr>
+      <tr><td>kwik kar near me</td><td><span class="pos-badge pos-1-3">1&ndash;3</span></td><td>kwikkar.com/locations top-ranked; strong GBP in TX markets</td></tr>
+      <tr><td>kwik kar oil change</td><td><span class="pos-badge pos-1-3">1&ndash;3</span></td><td>Homepage and 20-point service page rank at top for branded query</td></tr>
+      <tr><td>kwik kar auto service</td><td><span class="pos-badge pos-4-10">4&ndash;10</span></td><td>kwikkaronline.com competes; domain fragmentation across properties</td></tr>
+    </table></div>
+    <div class="card"><div class="card-header"><span class="card-title">Social Pulse</span></div><div style="font-size:0.85rem;margin-bottom:6px;">Volume: <strong>Low</strong></div><div class="social-grid">
+      <span class="social-pill pill-fb">Facebook: Franchise location pages active in TX markets</span>
+      <span class="social-pill pill-ig">Instagram: Minimal branded corporate presence</span>
+      <span class="social-pill pill-reddit">Reddit: Low &mdash; occasional Texas automotive threads</span>
+    </div></div>
+  </div>
+</div>
+
+<!-- ===== AMERICAN LUBE FAST ===== -->
+<div class="tab-panel" id="tab-alf" style="--brand-primary:#003082; --brand-accent:#E31837;">
+  <div class="brand-banner" style="background: linear-gradient(135deg, #001F5B 0%, #003082 100%);">
+    <div>
+      <h2>American Lube Fast</h2>
+      <div class="domain">lubefast.com &middot; Mid-Atlantic/Southeast &middot; 72 stores</div>
+    </div>
+    <div class="pulse-score-ring">
+      <div class="score">37</div>
+      <div class="label">Pulse Score</div>
+    </div>
+  </div>
+  <div class="grid-3">
+    <div class="card"><div class="card-header"><span class="card-title">Reviews</span></div><div class="star-display"><span class="rating-num">3.2</span><div><div class="stars">&#9733;&#9733;&#9733;&#9734;&#9734;</div><div class="review-sub">272 Yelp reviews &middot; 41 locations listed</div></div></div><div style="font-size:0.82rem;color:#6B7280;margin-top:8px;">Mixed reviews across AL, FL, GA, MS markets. Some locations praised for fast honest service; others flagged for pricing inconsistencies and service errors. Lowest star rating in FSA portfolio.</div></div>
+    <div class="card"><div class="card-header"><span class="card-title">News (7 days)</span><span class="card-badge badge-red">0 articles</span></div><div class="no-news">No news articles found in the past 7 days.</div></div>
+    <div class="card"><div class="card-header"><span class="card-title">AI / GEO Presence</span></div><div class="ai-status ai-no"><span class="ai-icon">&#10060;</span><div class="ai-text">No detectable AI Overview or GEO presence. Brand not surfaced in AI-generated recommendations for oil change searches.</div></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-header"><span class="card-title">Branded Keywords</span></div><table class="kw-table"><tr><th>Keyword</th><th>Est. Position</th><th>Notes</th></tr>
+      <tr><td>american lube fast near me</td><td><span class="pos-badge pos-4-10">4&ndash;10</span></td><td>lubefast.com ranks but Yelp/Maps directories compete for top</td></tr>
+      <tr><td>american lube fast oil change</td><td><span class="pos-badge pos-4-10">4&ndash;10</span></td><td>Brand site appears; limited domain authority vs competitors</td></tr>
+      <tr><td>ALF oil change</td><td><span class="pos-badge pos-nf">Not Found</span></td><td>Acronym too generic; no brand SERP association</td></tr>
+    </table></div>
+    <div class="card"><div class="card-header"><span class="card-title">Social Pulse</span></div><div style="font-size:0.85rem;margin-bottom:6px;">Volume: <strong>Low</strong></div><div class="social-grid">
+      <span class="social-pill pill-fb">Facebook: No major brand page found</span>
+      <span class="social-pill pill-ig">Instagram: No verified brand account</span>
+      <span class="social-pill pill-reddit">Reddit: No notable mentions</span>
+    </div></div>
+  </div>
+</div>
+
+<!-- ===== ECONOMY LUBE ===== -->
+<div class="tab-panel" id="tab-econ" style="--brand-primary:#2E7D32; --brand-accent:#FFFFFF;">
+  <div class="brand-banner" style="background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%);">
+    <div>
+      <h2>Economy Lube</h2>
+      <div class="domain">economylube.com &middot; Smaller regional (Canada + US)</div>
+    </div>
+    <div class="pulse-score-ring">
+      <div class="score">33</div>
+      <div class="label">Pulse Score</div>
+    </div>
+  </div>
+  <div class="grid-3">
+    <div class="card"><div class="card-header"><span class="card-title">Reviews</span></div><div class="star-display"><span class="rating-num">3.7</span><div><div class="stars">&#9733;&#9733;&#9733;&#9734;&#9734;</div><div class="review-sub">500&ndash;700 reviews per location (Canadian markets)</div></div></div><div style="font-size:0.82rem;color:#6B7280;margin-top:8px;">Upselling complaints prevalent. CBC Marketplace investigation (historical) still surfaces in search, creating persistent reputational headwind for the brand.</div></div>
+    <div class="card"><div class="card-header"><span class="card-title">News (7 days)</span><span class="card-badge badge-red">0 articles</span></div><div class="no-news">No news articles found in the past 7 days.</div></div>
+    <div class="card"><div class="card-header"><span class="card-title">AI / GEO Presence</span></div><div class="ai-status ai-no"><span class="ai-icon">&#10060;</span><div class="ai-text">No detectable AI Overview or GEO presence. Brand not appearing in AI-generated oil change recommendations in US or Canadian markets.</div></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-header"><span class="card-title">Branded Keywords</span></div><table class="kw-table"><tr><th>Keyword</th><th>Est. Position</th><th>Notes</th></tr>
+      <tr><td>economy lube near me</td><td><span class="pos-badge pos-11-20">11&ndash;20</span></td><td>economylube.com limited US presence; Canadian locations dominate SERPs</td></tr>
+      <tr><td>economy oil change</td><td><span class="pos-badge pos-11-20">11&ndash;20</span></td><td>Generic term competes with many unbranded results; low brand authority</td></tr>
+    </table></div>
+    <div class="card"><div class="card-header"><span class="card-title">Social Pulse</span></div><div style="font-size:0.85rem;margin-bottom:6px;">Volume: <strong>Low</strong></div><div class="social-grid">
+      <span class="social-pill pill-fb">Facebook: Minimal activity</span>
+      <span class="social-pill pill-ig">Instagram: No verified brand account</span>
+      <span class="social-pill pill-reddit">Reddit: Very low &mdash; no recent threads found</span>
+    </div></div>
+  </div>
+</div>
+
+<!-- ===== HERBERT AUTOMOTIVE ===== -->
+<div class="tab-panel" id="tab-herb" style="--brand-primary:#1E3A5F; --brand-accent:#C0C0C0;">
+  <div class="brand-banner" style="background: linear-gradient(135deg, #0F2040 0%, #1E3A5F 100%);">
+    <div>
+      <h2>Herbert Automotive</h2>
+      <div class="domain">herbertauto.com &middot; Cumming, GA &middot; Multiple locations</div>
+    </div>
+    <div class="pulse-score-ring">
+      <div class="score">57</div>
+      <div class="label">Pulse Score</div>
+    </div>
+  </div>
+  <div class="grid-3">
+    <div class="card"><div class="card-header"><span class="card-title">Reviews</span></div><div class="star-display"><span class="rating-num">4.9</span><div><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="review-sub">262&ndash;360 CarFax verified reviews per location</div></div></div><div style="font-size:0.82rem;color:#6B7280;margin-top:8px;">Highest star rating in FSA portfolio. Consistent praise for honesty, technical depth, and fair pricing. Forsyth County, GA community anchor since 1993.</div></div>
+    <div class="card"><div class="card-header"><span class="card-title">News (7 days)</span><span class="card-badge badge-red">0 articles</span></div><div class="no-news">No news articles found in the past 7 days.</div></div>
+    <div class="card"><div class="card-header"><span class="card-title">AI / GEO Presence</span></div><div class="ai-status ai-no"><span class="ai-icon">&#10060;</span><div class="ai-text">No detectable AI Overview or GEO presence. Hyper-local brand &mdash; not surfaced in AI recommendations outside Forsyth County, GA market.</div></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><div class="card-header"><span class="card-title">Branded Keywords</span></div><table class="kw-table"><tr><th>Keyword</th><th>Est. Position</th><th>Notes</th></tr>
+      <tr><td>herbert automotive near me</td><td><span class="pos-badge pos-1-3">1&ndash;3</span></td><td>herbertauto.com + GBP Knowledge Panel dominant in Cumming/Forsyth</td></tr>
+      <tr><td>herberts oil change</td><td><span class="pos-badge pos-1-3">1&ndash;3</span></td><td>Top-ranked in Cumming GA local searches; strong GBP presence</td></tr>
+    </table></div>
+    <div class="card"><div class="card-header"><span class="card-title">Social Pulse</span></div><div style="font-size:0.85rem;margin-bottom:6px;">Volume: <strong>Low</strong></div><div class="social-grid">
+      <span class="social-pill pill-fb">Facebook: @HerbertAutomotive active page</span>
+      <span class="social-pill pill-ig">Instagram: No verified brand account</span>
+      <span class="social-pill pill-reddit">Reddit: No mentions found</span>
+    </div></div>
+  </div>
+</div>
+
+<!-- ===== FSA CORPORATE ===== -->
+<div class="tab-panel" id="tab-fsa" style="--brand-primary:#1A2B4A; --brand-accent:#D4AF37;">
+  <div class="brand-banner" style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2B4A 100%);">
+    <div>
+      <h2>FullSpeed Automotive &mdash; Corporate</h2>
+      <div class="domain">fullspeedautomotive.com &middot; 949 total locations &middot; 8 brands</div>
+    </div>
+    <div class="pulse-score-ring">
+      <div class="score">70</div>
+      <div class="label">Pulse Score</div>
+    </div>
+  </div>
+  <div class="grid-3">
+    <div class="card"><div class="card-header"><span class="card-title">Press Coverage</span></div><div class="star-display"><span class="rating-num">4.5</span><div><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</div><div class="review-sub">Corporate brand &middot; portfolio average</div></div></div><div style="font-size:0.82rem;color:#6B7280;margin-top:8px;">CEO Brian Maciak appointed Nov 2025. 2026 target: 35 signed franchise agreements. GES training program launched Mar 2026 in Denver, expanding to TX and CA.</div></div>
+    <div class="card"><div class="card-header"><span class="card-title">News (7 days)</span><span class="card-badge badge-green">5 articles</span></div>
+      <div class="news-item"><div class="news-title"><a href="https://www.noln.net/site-placement/latest-news/news/55353184/fullspeed-automotive-plans-for-further-franchisee-expansion-in-2026" target="_blank">FullSpeed Automotive Plans for Further Franchisee Expansion in 2026</a></div><div class="news-meta">National Oil &amp; Lube News &middot; 2026</div></div>
+      <div class="news-item"><div class="news-title"><a href="https://www.franchise.org/2026/01/fullspeed-automotive-accelerates-growth-in-record-franchise-development-year-sets-bold-vision-for-2026/" target="_blank">FSA Accelerates Growth &mdash; Record Franchise Dev Year, Bold 2026 Vision</a></div><div class="news-meta">IFA / Franchise.org &middot; Jan 2026</div></div>
+      <div class="news-item"><div class="news-title"><a href="https://www.citybiz.co/article/809809/fullspeed-automotive-launches-2026-training-revamp-to-elevate-customer-experience/" target="_blank">FullSpeed Automotive Launches 2026 Training Revamp (GES Program)</a></div><div class="news-meta">CityBiz &middot; Feb 2026</div></div>
+      <div class="news-item"><div class="news-title"><a href="https://www.tirebusiness.com/service/tb-fullspeed-2025-milestones/" target="_blank">Grease Monkey &amp; SpeeDee Hit Milestones in 2025</a></div><div class="news-meta">Tire Business &middot; 2026</div></div>
+      <div class="news-item"><div class="news-title"><a href="https://www.privsource.com/acquisitions/deal/fullspeed-automotive-acquires-25-quick-lube-and-service-centers-in-dallas-fort-worth-9zS6lB" target="_blank">FSA Acquires 25 Quick-Lube Centers in Dallas&ndash;Fort Worth</a></div><div class="news-meta">PrivSource &middot; 2026</div></div>
+    </div>
+    <div class="card"><div class="card-header"><span class="card-title">AI / GEO Presence</span></div><div class="ai-status ai-partial"><span class="ai-icon">&#9889;</span><div class="ai-text">Partial &mdash; FSA mentioned in franchise trade AI content and automotive aftermarket B2B coverage. Not prominent in consumer-facing AI overviews for oil change searches.</div></div></div>
+  </div>
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header"><span class="card-title">Portfolio Summary</span></div>
+    <table class="kw-table">
+      <tr><th>Brand</th><th>Pulse Score</th><th>Stars</th><th>News (7d)</th><th>AI Presence</th></tr>
+      <tr><td>Grease Monkey</td><td><strong>86</strong></td><td>4.7</td><td>5</td><td>&#9889;</td></tr>
+      <tr><td>SpeeDee</td><td><strong>70</strong></td><td>4.8</td><td>2</td><td>&#9889;</td></tr>
+      <tr><td>Uncle Ed's</td><td><strong>44</strong></td><td>4.3</td><td>0</td><td>&#10060;</td></tr>
+      <tr><td>Kwik Kar</td><td><strong>65</strong></td><td>4.7</td><td>1</td><td>&#9889;</td></tr>
+      <tr><td>American Lube Fast</td><td><strong>37</strong></td><td>3.2</td><td>0</td><td>&#10060;</td></tr>
+      <tr><td>Economy Lube</td><td><strong>33</strong></td><td>3.7</td><td>0</td><td>&#10060;</td></tr>
+      <tr><td>Herbert Automotive</td><td><strong>57</strong></td><td>4.9</td><td>0</td><td>&#10060;</td></tr>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<footer class="site-footer">
+  FSA Brand Pulse &middot; FullSpeed Automotive &middot; Built by Sam Evans &middot; Auto-refreshes daily at 5am MT
+  &nbsp;&middot;&nbsp; <a href="https://github.com/SKE-creator/brand-pulse" style="color:inherit;">GitHub</a>
+</footer>
+
+<script>
+  // Tab switching
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabPanels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+
 </body>
 </html>
